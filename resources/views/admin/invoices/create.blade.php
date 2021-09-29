@@ -12,7 +12,8 @@
         @csrf
         <input type="hidden" id="subTotal" name="subTotal" value="">
         <input type="hidden" id="gst" name="gst">
-        <input type="hidden" id="superAmt" name="superAmt">
+        <input type="hidden" id="superAmt" name="superAmt" value="0">
+        <input type="hidden" id="farm_comp_super" name="farm_comp_super" value="">
         <input type="hidden" id="total_amount" name="total_amount" value="">  
         <input type="hidden" id="invoiceDetails" name="invoiceDetails" value=""> 
             <div class="row">
@@ -161,7 +162,7 @@ var TABLE_INVOICE_DATA = [];
 
 $(function () { 
     //check if the farm company is super
-    $("#super_tr").hide();
+    $("#super_tr").hide();    
     $("#farm_company_id").on("change", function(){
         farm_id = $(this).val();
         $.ajax({
@@ -171,7 +172,8 @@ $(function () {
                 "_token": "{{ csrf_token() }}",
                 id: farm_id                    
             },                
-            success:function(response){                
+            success:function(response){  
+                $("#farm_comp_super").val(response);      
                 if(response==1){
                     $("#super_tr").show();
                 }else{
@@ -263,11 +265,12 @@ function InvoiceData(date, desc, amt_charged){
     this.amount_charged = amt_charged;    
 } 
 
-function CalculateTotal() {
+function CalculateTotal() {    
     var grandT = 0;
     var sTotal = 0;
     var gst = 0;
     var superAmt = 0;
+    var farm_comp_super = $("#farm_comp_super").val();
     $("#invoice_details > tbody > tr").each(function () {
         var t3 = $(this).find('td').eq(2).html();
         if (!isNaN(t3)) {
@@ -279,9 +282,11 @@ function CalculateTotal() {
     var sT = parseFloat($('#sTotal').text());
     $('#subTotal').val(sT);
     //calculate super if exist
-    superAmt = sT*0.095;
-    $("#superAmount").html(superAmt);
-    $('#superAmt').val(superAmt);
+    if(farm_comp_super == 1){
+        superAmt = sT*0.095;
+        $("#superAmount").html(superAmt);
+        $('#superAmt').val(superAmt);
+    }    
     //calculate gst 10%
     gst = sT*0.1;
     $("#gstAmount").html(gst);

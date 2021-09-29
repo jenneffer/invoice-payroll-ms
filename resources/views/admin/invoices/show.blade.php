@@ -81,7 +81,7 @@
                         <td colspan="2" class="text-right"><b>Sub Total (AUD)</b></td>
                         <td class="text-right"><b>{{ $invoice->sub_total }}</b></td>
                     </tr>
-                    @if($invoice->super_amount != 0 || !empty($invoice->super_amount))
+                    @if($invoice->farm_company->super == 1 )
                     <tr>
                         <td colspan="2" class="text-right"><b>Super (9.5%)</b></td>
                         <td class="text-right"><b>{{ $invoice->super_amount }}</b></td>

@@ -44,6 +44,9 @@
                             GST(10%)
                         </th>
                         <th>
+                            Super(9.5%)
+                        </th>
+                        <th>
                             Total Amount(AUD)
                         </th>
                         <th>
@@ -83,6 +86,9 @@
                             </td>
                             <td class="text-right">
                                 {{ number_format($invoice->gst,2) ?? '' }}
+                            </td>
+                            <td class="text-right">
+                                {{ $invoice->farm_company->super == 1 ? $invoice->super_amount : '-' }}
                             </td>
                             <td class="text-right">
                                 {{ number_format($invoice->total_amount,2) ?? '' }}

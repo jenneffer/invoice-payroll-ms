@@ -13,7 +13,7 @@
             @csrf
             <input type="hidden" id="subTotal" name="subTotal" value="">
             <input type="hidden" id="gst" name="gst">
-            <input type="hidden" id="superAmt" name="superAmt">
+            <input type="hidden" id="superAmt" name="superAmt" value="0">
             <input type="hidden" id="total_amount" name="total_amount" value="">              
             <div class="row">
                 <div class="form-group col-sm-4">
@@ -109,11 +109,13 @@
                     <td class="text-right"><span id="subtotal_amt">0.00</span></td>
                     <td>&nbsp;</td>
                 </tr>
+                @if($invoice->farm_company->super == 1)
                 <tr id="super_tr">
                     <td colspan="2" class="text-right"><b>Super (9.5%)</b></td>
                     <td class="text-right"><span id="super_amt">0.00</span></td>
                     <td>&nbsp;</td>
                 </tr>
+                @endif
                 <tr>                        
                     <td colspan="2" class="text-right"><b>GST (10%)</b></td>
                     <td class="text-right"><span id="gst_amt">0.00</span></td>
@@ -289,6 +291,7 @@ function CalculateTotal() {
     var sTotal = 0;
     var gst = 0;
     var super_amt = 0;
+    var farm_com_super = "<?= $invoice->farm_company->super; ?>";
     $("#inv_details_table > tbody > tr").each(function () {
         var t3 = $(this).find('td').eq(2).html();        
         if (!isNaN(t3)) {            
@@ -299,10 +302,12 @@ function CalculateTotal() {
     //display total_amount - sTotal + gst
     var sT = parseFloat($('#subtotal_amt').text());
     $('#subTotal').val(sT);
-    //calculate super 9.5%
-    super_amt = sT*0.095;
-    $("#super_amt").html(super_amt);
-    $('#superAmt').val(super_amt);
+    //calculate super 9.5% if farm company super
+    if(farm_com_super == 1){
+        super_amt = sT*0.095;
+        $("#super_amt").html(super_amt);
+        $('#superAmt').val(super_amt);
+    }    
     //calculate gst 10%
     gst = sT*0.1;
     $("#gst_amt").html(gst);
