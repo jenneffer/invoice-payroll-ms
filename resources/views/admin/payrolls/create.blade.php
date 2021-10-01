@@ -14,7 +14,8 @@
             <input type='hidden' id='payrollDetailsPicking' name='payrollDetailsPicking' value=''> 
             <div class="form-group col-sm-4">
                 <label class="required" for="emp_name">Employee Name</label>
-                <select class="form-control" name="emp_name" id="emp_name">
+                <select name="emp_name" id="emp_name" class="form-control" >
+                    <option value="">Select Employee</option>
                     @foreach($employee as $id => $emp)
                         <option value="{{ $emp->id }}">{{ strtoupper($emp->emp_name) }}</option>
                     @endforeach                   
@@ -386,6 +387,43 @@ function calculateTime() {
     $('#total_hours').val(hr_after_rest);         
         
 }
+function calTime(){
+    var valuestart = $("input[name='time_start']").val();
+    var valuestop = $("input[name='time_end']").val();
+
+    if (valuestart != "" && valuestop != "") {
+        var tStart = parseTime(valuestart);
+        var tStop = parseTime(valuestop);
+
+        diff_time = (tStop - tStart)/(1000*60);
+    }
+    else {
+        diff_time = "";
+    }
+    timeConvert(diff_time);
+}
+function parseTime(cTime){
+    if (cTime == '') return null;
+    var d = new Date();
+    var time = cTime.match(/(\d+)(:(\d\d))?\s*(p?)/);
+    d.setHours( parseInt(time[1]) + ( ( parseInt(time[1]) < 12 && time[4] ) ? 12 : 0) );
+    d.setMinutes( parseInt(time[3]) || 0 );
+    d.setSeconds(0, 0);
+    return d;
+}
+function timeConvert(n) {
+    var num = n;
+    var hours = (num / 60);    
+    
+    var rest_time = $('#rest_time').val();
+    if(rest_time == '') rest_time = 0;
+    //convert rest time minutes into hour
+    var hr_rt = parseInt(rest_time)/60;  
+    
+    //total hour after rest
+    hr_after_rest = parseFloat(hours) - parseFloat(hr_rt);
+    $('#total_hours').val(hr_after_rest); 
+}
 
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -439,13 +477,15 @@ $(function () {
     });
     
     $('#time_end').on('keyup keydown', function(){
-        calculateTime();
+        // calculateTime();
+        calTime();
     });
 
     $('#rest_time').on('keyup', function(){
         var rest_time = $(this).val();
         $('#rest_time').val(rest_time);
-        calculateTime();
+        // calculateTime();
+        calTime();
     });
 
     $(".add_payroll_details_hourly").on( 'click', function(event) {                                          
@@ -458,20 +498,28 @@ $(function () {
 
     $('#payrollForm').on('submit',function(event){           
         event.preventDefault();
-        $("#payrollDetailsHourly").val(JSON.stringify(TABLE_PAYROLL_DATA_HOURLY));
-        $("#payrollDetailsPicking").val(JSON.stringify(TABLE_PAYROLL_DATA_PICKING));
-        var payrollData = $('#payrollForm').serialize();
-        $.ajax({
-            url: "/admin/payrolls/add",
-            type:"POST",               
-            data:{
-                "_token": "{{ csrf_token() }}",
-                data: payrollData                    
-            },                
-            success:function(response){                
-                window.location=response.url;
-            },
-        });
+        var emp_name = $("select[name=emp_name]").val();        
+        if( !emp_name ){
+            alert('Employee name is required!');  
+            $("select[name=emp_name]").focus()      
+        }else{
+            $("#payrollDetailsHourly").val(JSON.stringify(TABLE_PAYROLL_DATA_HOURLY));
+            $("#payrollDetailsPicking").val(JSON.stringify(TABLE_PAYROLL_DATA_PICKING));
+            var payrollData = $('#payrollForm').serialize();
+            $.ajax({
+                url: "/admin/payrolls/add",
+                type:"POST",               
+                data:{
+                    "_token": "{{ csrf_token() }}",
+                    data: payrollData                    
+                },                
+                success:function(response){                
+                    // window.location=response.url;
+                },
+            });
+
+        }
+        
     });
 });
 
