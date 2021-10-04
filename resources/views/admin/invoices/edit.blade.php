@@ -292,6 +292,7 @@ function CalculateTotal() {
     var gst = 0;
     var super_amt = 0;
     var farm_com_super = "<?= $invoice->farm_company->super; ?>";
+    var superAmount = "<?= $invoice->super_amount; ?>";
     $("#inv_details_table > tbody > tr").each(function () {
         var t3 = $(this).find('td').eq(2).html();        
         if (!isNaN(t3)) {            
@@ -303,7 +304,7 @@ function CalculateTotal() {
     var sT = parseFloat($('#subtotal_amt').text());
     $('#subTotal').val(sT);
     //calculate super 9.5% if farm company super
-    if(farm_com_super == 1){
+    if(farm_com_super == 1 && superAmount !=0){
         super_amt = sT*0.095;
         $("#super_amt").html(super_amt);
         $('#superAmt').val(super_amt);

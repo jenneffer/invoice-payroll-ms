@@ -45,7 +45,7 @@ class PayrollController extends Controller
         // $payroll = Payroll::create($request->all());
         $data = $request->all(); //form data        
         $param = array();
-        parse_str($data['data'], $param); //unserialize jquery string data          
+        parse_str($data['data'], $param); //unserialize jquery string data            
         $token = $param['_token'];
         $empID = $param['emp_name'];
         $totalAmount = $param['total_amount'];

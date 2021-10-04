@@ -514,7 +514,7 @@ $(function () {
                     data: payrollData                    
                 },                
                 success:function(response){                
-                    // window.location=response.url;
+                    window.location=response.url;
                 },
             });
 

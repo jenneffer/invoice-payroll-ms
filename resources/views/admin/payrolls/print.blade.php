@@ -137,7 +137,7 @@
                 </tr>
                 <tr>                        
                     <td colspan="8" class="text-right"><b>Grandtotal (AUD)</b></td>
-                    <td class="text-right"><b>{{ number_format((($total_salary+$payroll->allowance) - $payroll->deduction),2) }}</b></td>
+                    <td class="text-right"><b>{{ number_format((($total_salary+$payroll->allowance) - ($payroll->deduction+$payroll->emp_tax)),2) }}</b></td>
                 </tr>
             </tbody>
             </table>                         
