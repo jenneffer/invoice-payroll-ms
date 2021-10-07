@@ -1,6 +1,5 @@
 @extends('layouts.admin')
 @section('content')
-
 <div class="card">
     <div class="card-header">
         Edit Payroll
@@ -10,6 +9,8 @@
         <form id="payrollFormUpdate" name="payrollFormUpdate">
             @method('PUT')
             @csrf
+            <input type='hidden' id='payrollDetailsHourly' name='payrollDetailsHourly' value=''> 
+            <input type='hidden' id='payrollDetailsPicking' name='payrollDetailsPicking' value=''> 
             <input type="hidden" id="total_salary" name="total_salary" value="">
             <div class="separator"><b>Employee Details</b></div>
             <br>
@@ -42,10 +43,142 @@
                     @endif
                     <p class="helper-block"></p>
                 </div>
-            </div>                       
+            </div>  
+            <div>
+                <div style="width: 800px; float: left;">
+                    <div class="separator"><b>Pay Hourly</b></div>
+                    <br>
+                    <div class="row col-sm-12">
+                        <div class="form-group col-sm-3">
+                            <label for="date">Date</label>
+                            <input class="form-control date" type="text" name="date_hourly" id="date_hourly" value="">                    
+                        </div>
+                        <div class="form-group col-sm-3">
+                            <label class="required" for="job_name_hourly">Job type</label>
+                            <input type="hidden" name="jobNameHourly" id="jobNameHourly" value="">     
+                            <select class="form-control" name="job_name_hourly" id="job_name_hourly">
+                                <option value="">-Please Select Job-</option>
+                                @foreach($job as $id => $j)
+                                @if($j->job_pay_method == 'hour')
+                                    <option value="{{ $j->id }}">{{ strtoupper($j->job_name) }}</option>
+                                @endif
+                                @endforeach                   
+                            </select>
+                            @if($errors->has('job_name_hourly'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('job_name_hourly') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.student.fields.last_name_helper') }}</span>
+                        </div>  
+                        <div class="form-group col-sm-3">
+                            <label for="time_start">Time Start</label>
+                            <input class="form-control {{ $errors->has('time_start') ? 'is-invalid' : '' }}" type="time" name="time_start" id="time_start" value="{{ old('time_start') }}">
+                            @if($errors->has('total_hours'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('time_start') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.student.fields.email_helper') }}</span>
+                        </div> 
+                        <div class="form-group col-sm-3">
+                            <label for="time_end">Time End</label>
+                            <input class="form-control {{ $errors->has('time_end') ? 'is-invalid' : '' }}" type="time" name="time_end" id="time_end" value="{{ old('time_end') }}">
+                            @if($errors->has('total_hours'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('time_end') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.student.fields.email_helper') }}</span>
+                        </div>                      
+                    </div>
+                    <div class="row col-sm-12">
+                                                 
+                    </div>
+                    <div class="row col-sm-12">
+                        <div class="form-group col-sm-3">
+                            <label for="rest_time">Rest Time (Min)</label>
+                            <input class="form-control {{ $errors->has('rest_time') ? 'is-invalid' : '' }} allow_numeric" type="text" name="rest_time" id="rest_time" value="{{ old('rest_time') }}">
+                            @if($errors->has('rest_time'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('rest_time') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.student.fields.email_helper') }}</span>
+                        </div> 
+                        <div class="form-group col-sm-3">
+                            <label for="total_hours">Total Hour(s)</label>
+                            <input class="form-control {{ $errors->has('total_hours') ? 'is-invalid' : '' }}" type="text" name="total_hours" id="total_hours" value="{{ old('total_hours') }}">
+                            @if($errors->has('total_hours'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('total_hours') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.student.fields.email_helper') }}</span>
+                        </div>                
+                        <div class="form-group col-sm-3">
+                            <label for="job_rate_hourly">Rate (AUD)</label>
+                            <input class="form-control allow_decimal" type="text" name="job_rate_hourly" id="job_rate_hourly" value="" >                    
+                        </div>
+                        <div class="form-group col-sm-3" >
+                            <button type="button" class="btn btn-success add_payroll_details_hourly" style="position:absolute; bottom:0;">Add</button>
+                        </div>
+                    </div>                   
+                    <div class="separator"></div>
+                </div>
+                <div style="margin-left: 850px;">
+                    <div class="separator"><b>Fruit Picking</b></div>
+                    <br> 
+                    <div class="row col-sm-12">
+                        <div class="form-group col-sm-4">
+                            <label for="date">Date</label>
+                            <input class="form-control date" type="text" name="date_picking" id="date_picking" value="">                    
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="required" for="job_name_picking">Job type</label>
+                            <input type="hidden" name="jobNamePicking" id="jobNamePicking" value="">     
+                            <select class="form-control" name="job_name_picking" id="job_name_picking">
+                                <option value="">-Please Select Job-</option>
+                                @foreach($job as $id => $j)
+                                @if($j->job_pay_method == 'bin')
+                                    <option value="{{ $j->id }}">{{ strtoupper($j->job_name) }}</option>
+                                @endif
+                                @endforeach                   
+                            </select>
+                            @if($errors->has('job_name_picking'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('job_name_picking') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.student.fields.last_name_helper') }}</span>
+                        </div>                                        
+                    </div> 
+                    <div class="row col-sm-12">
+                        <div class="form-group col-sm-4">
+                            <label for="total_bin">Total Bin(s)</label>
+                            <input class="form-control {{ $errors->has('total_bin') ? 'is-invalid' : '' }}" type="text" name="total_bin" id="total_bin" value="{{ old('total_bin') }}">
+                            @if($errors->has('total_bin'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('total_bin') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.student.fields.email_helper') }}</span>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label for="job_rate_picking">Rate (AUD)</label>
+                            <input class="form-control allow_decimal" type="text" name="job_rate_picking" id="job_rate_picking" value="">                    
+                        </div>
+                        <div class="form-group col-sm-2" >
+                            <button type="button" class="btn btn-success add_payroll_details_picking" style="position:absolute; bottom:0;">Add</button>
+                        </div>
+                    </div>
+                    <div class="separator"></div>
+                </div>
+            </div>     
+            <br><br>               
             <div class="separator"><b>Job Details</b></div>
             <br>
-            <table class="table table-bordered table-striped">
+            <table id="job_details" class="table table-bordered table-striped">
                 <thead>
                     <th>Date</th>
                     <th>Job</th>
@@ -67,7 +200,7 @@
                         $total_salary += $p->total;
                         @endphp
                         <tr data-entry-id="{{$p->id}}">
-                            <td>{{ date('d-m-Y', strtotime($p->date)) ?? '' }}</td>
+                            <td>{{ $p->date ?? '' }}</td>
                             <td>{{ App\Job::getJobName($p->job_id) ?? '' }}</td>
                             <td>{{ $p->time_start ?? '' }}</td>
                             <td>{{ $p->time_end ?? '' }}</td>
@@ -75,7 +208,7 @@
                             <td class="text-center">{{ $p->total_hours ?? '' }}</td>
                             <td class="text-center">{{ $p->total_bin ?? '' }}</td>
                             <td class="text-center">{{ number_format($p->rate,2) ?? '' }}</td>
-                            <td class="text-right">{{ number_format($p->total,2) ?? '' }}</td>
+                            <td class="text-right">{{ $p->total ?? '' }}</td>
                             <td class="text-center">
                                 <span id="{{$p->id}}" data-toggle="modal" class="edit_data_payroll" data-target="#editItemPayroll"><i class="fas fa-edit"></i></span>
                                 <span id="{{$p->id}}" data-toggle="modal" class="delete_data_payroll" data-target="#deleteItemPayroll"><i class="fas fa-trash-alt"></i></span>
@@ -84,7 +217,7 @@
                     @endforeach
                     <tr>
                         <td colspan="8" class="text-right">Total (AUD)</td>
-                        <td class="text-right">{{number_format($total_salary,2)}}</td>
+                        <td class="text-right"><span id="total_aud">0.00</span></td>
                         <td>&nbsp;</td>
                     </tr>
                     <tr>
@@ -252,10 +385,27 @@
 
 @section('scripts')
 <script type="text/javascript">
-$(document).ready(function(){  
+var TABLE_PAYROLL_DATA_HOURLY = [];
+var TABLE_PAYROLL_DATA_PICKING = [];
+
+function getColumnTotal(){
+    var grandT = 0;
+    $("#job_details > tbody > tr").each(function () {
+        var t3 = $(this).find('td').eq(8).html();
+        console.log(!isNaN(t3));
+        if (!isNaN(t3)) {
+            grandT += parseFloat(t3);
+        }
+    });
+    $('#total_salary').val(grandT);
+    return grandT;
+}
+
+$(document).ready(function(){      
     //validate input text 
-    var total = <?= json_decode($total_salary)?>;
-    $('#total_salary').val(total);
+    var total = getColumnTotal();
+    
+    $('#total_aud').text((Math.round(total * 100) / 100).toFixed(2));    
     $(".allow_decimal").on("keypress keyup",function (event) {           
         $(this).val($(this).val().replace(/[^0-9\.]/g,''));
         if ((event.which != 46 || $(this).val().indexOf('.') != -1) && (event.which < 48 || event.which > 57)) {
@@ -273,7 +423,7 @@ $(document).ready(function(){
     $('#allowance').on('keypress keyup', function(){
         var allowance = $(this).val();
         var deduction = $('#deduction').val();
-        var emp_tax = $('#emp_tax').val();
+        var emp_tax = $('#emp_tax').val();       
         CalculateTotal(total, allowance, deduction, emp_tax);
     });
 
@@ -292,7 +442,8 @@ $(document).ready(function(){
     });
 
     $('#time_end').on('keyup keydown', function(){
-        calculateTime();
+        // calculateTime();
+        calTime();
     });
 
     $('#total_hours').on('keypress keyup', function(){
@@ -323,9 +474,15 @@ $(document).ready(function(){
     $('#rest_time').on('keyup', function(){
         var rest_time = $(this).val();
         $('#rest_time').val(rest_time);
-        calculateTime();
+        // calculateTime();
+        calTime();
     });
-
+    
+    $("#job_details").on('click','.remove_item',function(){
+        $(this).parent().parent().remove();
+        CalcTotal();
+    });
+    
     $(document).on('click', '.edit_data_payroll', function(){
         var id = $(this).attr("id");               
         //hide total bin if its hourly    
@@ -338,6 +495,7 @@ $(document).ready(function(){
                 id:id                
             },
             success:function(data){
+                console.log(data);
                 rate = data.rate;
                 total_bin = (data.total_bin == '' || data.total_bin == null ) ? 0 : data.total_bin;
                 total_hours = (data.total_hours == '' || data.total_hours == null) ? 0 : data.total_hours;
@@ -359,7 +517,7 @@ $(document).ready(function(){
                 $('#time_end').val(data.time_end);  
                 $('#rest_time').val(data.time_rest);   
                 $('#total_hours').val(data.total_hours);     
-                $('#total_bin').val(data.total_bin);     
+                $('#total_bin').val(parseFloat(data.total_bin));     
                 $('#job_rate').val(data.rate);     
                 $('#editItemPayroll').modal('show');
             }
@@ -389,7 +547,9 @@ $(document).ready(function(){
     });
 
     $('#payrollFormUpdate').on('submit',function(event){           
-        event.preventDefault();
+        event.preventDefault();        
+        $("#payrollDetailsHourly").val(JSON.stringify(TABLE_PAYROLL_DATA_HOURLY));
+        $("#payrollDetailsPicking").val(JSON.stringify(TABLE_PAYROLL_DATA_PICKING));
         var payrollData = $('#payrollFormUpdate').serialize();
         $.ajax({
             url: "/admin/payrolls/update",
@@ -422,7 +582,112 @@ $(document).ready(function(){
             },
         });
     });
+
+    $(".add_payroll_details_hourly").on( 'click', function(event) {                                          
+        addRowPayrollHourly();                 
+    });
+
+    $(".add_payroll_details_picking").on( 'click', function(event) {                                          
+        addRowPayrollPicking();                 
+    });
 });
+
+function addRowPayrollHourly(){             
+    var date = $("input[name=date_hourly]").val();
+    var job_name = $("select[name=job_name_hourly]").val();
+    var total_hours = $("input[name=total_hours]").val();
+    var time_start = $("input[name=time_start]").val();
+    var time_end = $("input[name=time_end]").val();
+    var rest_time = $("input[name=rest_time]").val();
+    var job_rate = $("input[name=job_rate_hourly]").val();   
+
+    if(date == ''){
+        alert('Date is required!');              
+    }
+    else if(job_name == ''){
+        alert('Job name is required!');
+        $( "#job_name_hourly" ).focus();
+    }
+    else if(total_hours == ''){
+        alert('Total hours is required!')
+        $( "#total_hours" ).focus();
+    } 
+    else if(time_start == ''){
+        alert('Time start is required!')
+        $( "#time_start" ).focus();
+    } 
+    else if(time_end == ''){
+        alert('Time end is required!')
+        $( "#time_end" ).focus();
+    }    
+    else if(job_rate == ''){
+        alert('Job rate is required!');
+        $( "#job_rate_hourly" ).focus();
+    }
+    else{
+        var total = (Math.round((total_hours * job_rate) * 100) / 100).toFixed(2);    
+        var currentPayrollData = new payrollData(date, job_name, total_hours, time_start, time_end, rest_time, job_rate);
+        TABLE_PAYROLL_DATA_HOURLY.push(currentPayrollData);
+
+        var markup = "<tr><td>"+date+"</td><td>"+job_name+"</td><td style='text-align:center;'>"+time_start+"</td><td style='text-align:center;'>"+time_end+"</td><td style='text-align:center;'>"+rest_time+"</td><td style='text-align:center;'>"+total_hours+"</td><td>&nbsp;</td><td style='text-align:center;'>"+job_rate+"</td><td style='text-align:right;'>"+total+"</td>"
+        +"<td style='text-align:center;'>"
+            +"<a href='javascript:void(0);' style='font-size: 1em; color: Tomato;' class='remove_item'><i class='far fa-trash-alt'></i></a>"        
+        +"</td></tr>";
+        $("#job_details tbody").prepend(markup);
+        
+        CalcTotal();
+
+        //clear input fields after populated in the table
+        $("input[name=date_hourly").val('');
+        $("input[select=job_name_hourly").val('');
+        $("input[name=total_hours").val('');        
+        $("input[name=job_rate_hourly").val('');    
+        $("input[name=time_start").val('');    
+        $("input[name=time_end").val('');    
+        $("input[name=rest_time").val('');   
+    }             
+}
+function addRowPayrollPicking(){  
+
+    var date = $("input[name=date_picking]").val();
+    var total_bin = $("input[name=total_bin]").val();
+    var job_name = $("select[name=job_name_picking]").val();    
+    var job_rate = $("input[name=job_rate_picking]").val();
+    
+    if(date == ''){
+        alert('Date is required!');        
+    }
+    else if(job_name == ''){
+        alert('Job name is required!');
+        $( "#job_name_picking" ).focus();
+    }
+    else if(total_bin == ''){
+        alert('Total bin is required!')
+        $( "#total_bin" ).focus();
+    }    
+    else if(job_rate == ''){
+        alert('Job rate is required!');
+        $( "#job_rate_picking" ).focus();
+    }
+    else{
+        var total = (total_bin * job_rate);
+        var currentPayrollData = new payrollData2(date, job_name, total_bin, job_rate);
+        TABLE_PAYROLL_DATA_PICKING.push(currentPayrollData);
+
+        var markup = "<tr><td>"+date+"</td><td>"+job_name+"</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td style='text-align:center;'>"+total_bin+"</td><td style='text-align:center;'>"+job_rate+"</td><td style='text-align:right;'>"+total+"</td>"
+        +"<td style='text-align:center;'><a href='javascript:void(0);' style='font-size: 1em; color: Tomato;' class='remove_item'><i class='far fa-trash-alt'></i></a></td>"     
+        +"</tr>";
+        $("#job_details tbody").prepend(markup);
+        
+        // CalculateTotalPicking();
+        CalcTotal();
+        //clear input fields after populated in the table
+        $("input[name=date_picking").val('');
+        $("select[name=job_name_picking").val('');
+        $("input[name=total_bin").val('');        
+        $("input[name=job_rate_picking").val(''); 
+    }                       
+}
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -455,7 +720,43 @@ function calculateTime() {
     calNewTotal(hr_after_rest, job_rate); 
         
 }
+function calTime(){
+    var valuestart = $("input[name='time_start']").val();
+    var valuestop = $("input[name='time_end']").val();
 
+    if (valuestart != "" && valuestop != "") {
+        var tStart = parseTime(valuestart);
+        var tStop = parseTime(valuestop);
+
+        diff_time = (tStop - tStart)/(1000*60);
+    }
+    else {
+        diff_time = "";
+    }
+    timeConvert(diff_time);
+}
+function parseTime(cTime){
+    if (cTime == '') return null;
+    var d = new Date();
+    var time = cTime.match(/(\d+)(:(\d\d))?\s*(p?)/);
+    d.setHours( parseInt(time[1]) + ( ( parseInt(time[1]) < 12 && time[4] ) ? 12 : 0) );
+    d.setMinutes( parseInt(time[3]) || 0 );
+    d.setSeconds(0, 0);
+    return d;
+}
+function timeConvert(n) {
+    var num = n;
+    var hours = (num / 60);    
+    
+    var rest_time = $('#rest_time').val();
+    if(rest_time == '') rest_time = 0;
+    //convert rest time minutes into hour
+    var hr_rt = parseInt(rest_time)/60;  
+    
+    //total hour after rest
+    hr_after_rest = parseFloat(hours) - parseFloat(hr_rt);
+    $('#total_hours').val(hr_after_rest); 
+}
 function calNewTotal(hr_after_rest, job_rate){
     var total = parseFloat(hr_after_rest*1) * parseFloat(job_rate*1);
     $('#totalSalary').text(total.toFixed(2));
@@ -463,10 +764,39 @@ function calNewTotal(hr_after_rest, job_rate){
 }
 
 function CalculateTotal(total, allowance, deduction, emp_tax) {
-
+    total = $('#total_aud').html();
     var gTotal = (parseFloat(total*1)+parseFloat(allowance*1)) - parseFloat(deduction*1 + emp_tax*1);
     $('#gTotal').text((Math.round(gTotal * 100) / 100).toFixed(2));
 }
-
+function CalcTotal() {
+    var grandT = 0;
+    $("#job_details > tbody > tr").each(function () {
+        var t3 = $(this).find('td').eq(8).html();
+        if (!isNaN(t3)) {
+            grandT += parseFloat(t3);
+        }
+    });
+    $("#total_aud").html((Math.round((grandT) * 100) / 100).toFixed(2));
+    $('#total_salary').val(grandT);
+    var allowance = $('#allowance').val();
+    var deduction = $('#deduction').val();
+    var emp_tax = $('#emp_tax').val();
+    CalculateTotal(grandT, allowance, deduction, emp_tax);
+}
+function payrollData(date, job_name, total_hours, time_start, time_end, rest_time, job_rate){
+    this.date = date;
+    this.job_name = job_name;
+    this.total_hours = total_hours;
+    this.time_start = time_start;
+    this.time_end = time_end;
+    this.rest_time = rest_time;
+    this.job_rate = job_rate;    
+} 
+function payrollData2(date, job_name, total_bin, job_rate){
+    this.date = date;
+    this.job_name = job_name;
+    this.total_bin = total_bin;
+    this.job_rate = job_rate;    
+} 
 </script>
 @endsection

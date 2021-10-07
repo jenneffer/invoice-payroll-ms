@@ -125,6 +125,40 @@ class PayrollController extends Controller
         $param = array();
         parse_str($data['data'], $param); //unserialize jquery string data  
         
+        $payrollDetailsHourly = json_decode($param['payrollDetailsHourly']);
+        
+        foreach($payrollDetailsHourly as $ph){            
+            $total = ((double)$ph->total_hours * (double)$ph->job_rate);            
+            $payrollDataH = array(
+                'payroll_id' => $payroll_id,
+                'job_id' => $ph->job_name,
+                'total_hours' => $ph->total_hours,
+                'time_start' => $ph->time_start,
+                'time_end' => $ph->time_end,
+                'time_rest' => $ph->rest_time,
+                'rate' => $ph->job_rate,
+                'date' => $ph->date,    
+                'total' => $total
+            );
+            
+            PayrollDetails::create($payrollDataH);   
+        }
+
+        $payrollDetailsPicking = json_decode($param['payrollDetailsPicking']);        
+        foreach($payrollDetailsPicking as $pp){
+            $total = ((double)$pp->total_bin * (double)$pp->job_rate);            
+            $payrollDataP = array(
+                'payroll_id' => $payroll_id,
+                'job_id' => $pp->job_name,                
+                'total_bin' => $pp->total_bin,
+                'rate' => $pp->job_rate,
+                'date' => $pp->date,    
+                'total' => $total
+            );
+            
+            PayrollDetails::create($payrollDataP);   
+        }
+
         $total_salary = $param['total_salary'];
         $created_at = date($param['created_at']." h:i:s");
         $allowance = $param['allowance'];
