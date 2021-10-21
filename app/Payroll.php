@@ -37,7 +37,8 @@ class Payroll extends Model
         'total_salary',
         'deduction',
         'emp_tax',
-        'allowance',        
+        'allowance',     
+        'payroll_date',   
         'created_at',
         'updated_at',
         'deleted_at',
@@ -61,6 +62,11 @@ class Payroll extends Model
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function scopeBetween($query, Carbon $from, Carbon $to)
+    {
+        $query->whereBetween('created_at', [$from, $to]);
     }
 
 }

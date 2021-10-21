@@ -12,20 +12,26 @@
             @csrf
             <input type='hidden' id='payrollDetailsHourly' name='payrollDetailsHourly' value=''> 
             <input type='hidden' id='payrollDetailsPicking' name='payrollDetailsPicking' value=''> 
-            <div class="form-group col-sm-4">
-                <label class="required" for="emp_name">Employee Name</label>
-                <select name="emp_name" id="emp_name" class="form-control" >
-                    <option value="">Select Employee</option>
-                    @foreach($employee as $id => $emp)
-                        <option value="{{ $emp->id }}">{{ strtoupper($emp->emp_name) }}</option>
-                    @endforeach                   
-                </select>
-                @if($errors->has('emp_name'))
-                    <div class="invalid-feedback">
-                        {{ $errors->first('emp_name') }}
-                    </div>
-                @endif
-                <span class="help-block">{{ trans('cruds.student.fields.first_name_helper') }}</span>
+            <div class="row">
+                <div class="form-group col-sm-4">
+                    <label class="required" for="emp_name">Employee Name</label>
+                    <select name="emp_name" id="emp_name" class="form-control" >
+                        <option value="">Select Employee</option>
+                        @foreach($employee as $id => $emp)
+                            <option value="{{ $emp->id }}">{{ strtoupper($emp->emp_name) }}</option>
+                        @endforeach                   
+                    </select>
+                    @if($errors->has('emp_name'))
+                        <div class="invalid-feedback">
+                            {{ $errors->first('emp_name') }}
+                        </div>
+                    @endif
+                    <span class="help-block">{{ trans('cruds.student.fields.first_name_helper') }}</span>
+                </div>
+                <div class="form-group col-sm-3">
+                    <label class="required" for="payroll_date">Payroll Date</label>
+                    <input class="form-control date" type="text" name="payroll_date" id="payroll_date" value="">    
+                </div>
             </div>
             
             <div class="separator"><b>Pay Hourly</b></div>

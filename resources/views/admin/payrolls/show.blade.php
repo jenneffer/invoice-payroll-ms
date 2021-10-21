@@ -30,7 +30,7 @@
             </div>
             <div class="form-item">
                 <label class="emp_label">Date</label>
-                <p>:&nbsp;{{$employee_data->created_at}}</p>
+                <p>:&nbsp;{{$employee_data->payroll_date}}</p>
             </div>
             <div class="form-item">
                 <label class="emp_label">Email</label>

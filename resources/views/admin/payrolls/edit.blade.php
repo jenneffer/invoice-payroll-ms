@@ -35,10 +35,10 @@
                     <label>Payroll Date</label>
                 </div>                
                 <div class="col-sm-2">                    
-                    <input type="text" id="created_at" name="created_at" class="form-control date" value="{{ old('created_at', isset($employee_data) ? $employee_data->created_at : '') }}"  required>
-                    @if($errors->has('created_at'))
+                    <input type="text" id="payroll_date" name="payroll_date" class="form-control date" value="{{ old('payroll_date', isset($employee_data) ? $employee_data->payroll_date : '') }}"  required>
+                    @if($errors->has('payroll_date'))
                         <em class="invalid-feedback">
-                            {{ $errors->first('created_at') }}
+                            {{ $errors->first('payroll_date') }}
                         </em>
                     @endif
                     <p class="helper-block"></p>

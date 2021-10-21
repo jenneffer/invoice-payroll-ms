@@ -31,6 +31,53 @@ class PayrollController extends Controller
         return view('admin.payrolls.index', compact('payroll'));
     }
 
+    public function filter_daterange(Request $request){
+        $from = $request->searchByFromdate;
+        $to = $request->searchByTodate;
+        if(request()->ajax()){
+            $payroll = DB::table('payroll')
+            ->join('employee', 'employee.id', '=', 'payroll.emp_id')
+            ->select('payroll.*', 'employee.emp_name', 'employee.emp_email',DB::raw('((total_salary+allowance)-(deduction+emp_tax)) as payable_salary'))
+            ->where('payroll.deleted_at', NULL)
+            ->whereBetween('payroll_date', array($from, $to))
+            ->get();
+        
+            return datatables()->of($payroll)  
+                    ->addIndexColumn()   
+                    ->addColumn('action', function($row){
+                        return $this->getActionColumn($row);
+                    })
+                    ->addColumn('print', function($row){
+                        return $this->getPrintColumn($row);
+                    })
+                    ->rawColumns(['action','print'])
+                    ->make(true);
+        }
+        
+    }
+
+    protected function getPrintColumn($data): string
+    {
+        $printUrl = route('admin.payrolls.print',$data->id);
+        return "<a href='$printUrl' target='_blank' title='Print'>
+                <i class='fas fa-print fa-2x'></i>
+                </a>";
+    }
+
+    protected function getActionColumn($data): string
+    {
+        $showUrl = route('admin.payrolls.show', $data->id);
+        $editUrl = route('admin.payrolls.edit', $data->id);
+        $deleteUrl = route('admin.payrolls.destroy', $data->id);
+        return "<a class='btn btn-xs btn-primary' data-value='$data->id' href='$showUrl'>View</a> 
+                <a class='btn btn-xs btn-info' data-value='$data->id' href='$editUrl'>Edit</a>
+                <form action='$deleteUrl' method='POST' onsubmit='return confirm('Are you sure?');' style='display: inline-block;'>
+                    <input type='hidden' name='_method' value='DELETE'>
+                    <input type='hidden' name='_token' value='{{ csrf_token() }}'>
+                    <input type='submit' class='btn btn-xs btn-danger' value='Delete'>
+                </form>";
+    }
+
     public function create()
     {
         // abort_if(Gate::denies('student_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -48,6 +95,7 @@ class PayrollController extends Controller
         parse_str($data['data'], $param); //unserialize jquery string data            
         $token = $param['_token'];
         $empID = $param['emp_name'];
+        $payroll_date = $param['payroll_date'];
         $totalAmount = $param['total_amount'];
         $allowance = !empty($param['allowance']) ? $param['allowance'] : 0;
         $deduction = !empty($param['deduction']) ? $param['deduction'] : 0;
@@ -60,6 +108,7 @@ class PayrollController extends Controller
             'deduction' => $deduction,
             'emp_tax' => $emp_tax,
             'allowance' => $allowance,
+            'payroll_date' => $payroll_date,
             'created_at' => Carbon::now()->toDateTimeString()
         ]);
         
@@ -160,7 +209,7 @@ class PayrollController extends Controller
         }
 
         $total_salary = $param['total_salary'];
-        $created_at = date($param['created_at']." h:i:s");
+        $payroll_date = $param['payroll_date'];
         $allowance = $param['allowance'];
         $deduction = $param['deduction'];
         $emp_tax = $param['emp_tax'];
@@ -171,8 +220,9 @@ class PayrollController extends Controller
                   'total_salary' => $total_salary,
                   'deduction' => $deduction,
                   'emp_tax' => $emp_tax,
+                  'payroll_date' => $payroll_date,
                   'allowance' => $allowance,
-                  'created_at' => $created_at
+                  'updated_at' => Carbon::now()->toDateTimeString()
                 ]);
         // return redirect()->route('admin.payrolls.index');
         return response()->json(['url'=>url('/admin/payrolls')]);

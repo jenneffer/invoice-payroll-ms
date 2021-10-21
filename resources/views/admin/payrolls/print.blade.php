@@ -79,7 +79,7 @@
                 </div> -->
                 <div class="form-item">
                     <label for="name">Date</label>
-                    <p>: {{date('d-m-Y', strtotime($payroll->created_at))}}</p>
+                    <p>: {{date('d-m-Y', strtotime($payroll->payroll_date))}}</p>
                 </div>
               </div> 
             </div>                           

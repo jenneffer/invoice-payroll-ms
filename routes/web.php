@@ -36,6 +36,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     Route::post('payrolls/details/destroy', 'PayrollController@destroy_details')->name('payrolls.destroy.details');
     Route::post('payrolls/details/update', 'PayrollController@update_details')->name('payrolls.details.update');
     Route::get('payrolls/print_payroll/{id}', 'PayrollController@print_payroll')->name('payrolls.print');
+    Route::post('payrolls/daterange', 'PayrollController@filter_daterange')->name('payrolls.daterange');
 
 
     // Students
@@ -87,6 +88,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     Route::delete('jobs/destroy', 'JobController@massDestroy')->name('jobs.massDestroy');
     Route::resource('jobs', 'JobController');
     Route::post('jobs/get-job', 'JobController@get_job_info')->name('jobs.info');
+
+    
 
 });
 Route::group(['prefix' => 'profile', 'as' => 'profile.', 'namespace' => 'Auth', 'middleware' => ['auth']], function () {
