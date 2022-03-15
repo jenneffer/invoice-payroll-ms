@@ -83,6 +83,14 @@
                 </li>
             @endcan 
 			<li class="nav-item">
+                <a href="{{ route("admin.timesheet.index") }}" class="nav-link {{ request()->is('admin/timesheet') || request()->is('admin/timesheet/*') ? 'active' : '' }}">
+                    <i class="fa-fw fas fa-cogs nav-icon">
+
+                    </i>
+                    Time Sheet
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route("admin.payrolls.index") }}" class="nav-link {{ request()->is('admin/payrolls') || request()->is('admin/payrolls/*') ? 'active' : '' }}">
                     <i class="fa-fw fas fa-cogs nav-icon">
 

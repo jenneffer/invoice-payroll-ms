@@ -62,6 +62,7 @@
                 </thead>
                 <tbody>
                     @foreach($invoices as $key => $invoice)
+                    @if($invoice->farm_company !== null)
                         <tr data-entry-id="{{ $invoice->id }}">
                             <td>
 
@@ -88,7 +89,7 @@
                                 {{ number_format($invoice->gst,2) ?? '' }}
                             </td>
                             <td class="text-right">
-                                {{ $invoice->farm_company->super == 1 ? $invoice->super_amount : '-' }}
+                                {{$invoice->farm_company->super == 1 ? $invoice->super_amount : '-'}}
                             </td>
                             <td class="text-right">
                                 {{ number_format($invoice->total_amount,2) ?? '' }}
@@ -136,6 +137,7 @@
                             </td>
 
                         </tr>
+                        @endif
                     @endforeach
                 </tbody>
             </table>

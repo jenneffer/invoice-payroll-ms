@@ -64,4 +64,9 @@ class PayrollDetails extends Model
 
     }
 
+    public function job()
+    {
+        return $this->hasOne(Job::class, 'id','job_id');
+    }
+
 }

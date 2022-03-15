@@ -37,7 +37,9 @@ class Payroll extends Model
         'total_salary',
         'deduction',
         'emp_tax',
-        'allowance',     
+        'remark',
+        'allowance',
+        'email_sent',     
         'payroll_date',   
         'created_at',
         'updated_at',
@@ -56,12 +58,12 @@ class Payroll extends Model
 
     public function payroll_details()
     {
-        return $this->hasMany(PayrollDetails::class, 'payroll_id');
+        return $this->hasMany(PayrollDetails::class, 'payroll_id','id');
     }
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->hasOne(Employee::class,'id', 'emp_id');
     }
 
     public function scopeBetween($query, Carbon $from, Carbon $to)

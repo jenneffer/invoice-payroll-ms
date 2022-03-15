@@ -45,99 +45,112 @@
     <body>
         <div id="container">
           <div class="grid" id="invoice">
-            <div class="form-group">
-              <p>Linus Pty Ltd</p>
-              <p>ABN No: 74642074575</p>
-              <p>ACN No: 642074574</p>
+            <div class="form-group" style="text-align: center;">
+              <p style="font-size: 32px;">{{strtoupper('Linus Pty Ltd')}}</p>
+              {{-- <p>ABN No: 74642074575</p>
+              <p>ACN No: 642074574</p> --}}
             </div>
             <br>
             <div class="form-group row">
-              <div class="col-sm-8">                
+              {{-- <div class="col-sm-8">                
                 <p>20 Jacobs Street</p>
                 <p>WAIKERIE SA 5330</p>
-              </div>                  
+              </div>                   --}}
               <div class="col-sm-4">
                 <p>&nbsp;</p>
-                <p>PAYSLIP</p>
+                <p style="font-size: 16px;">{{$employee->emp_name}}</p>
               </div>          
             </div>
             <div class="form-group row">    
-              <div class="col-sm-8">
-                <div class="form-item">
+              <div class="col-sm-7">
+                {{-- <div class="form-item">
                     <label for="name">Employee</label>
                     <p>: {{$employee->emp_name}}</p>
                 </div>
                 <div class="form-item">
                     <label for="name">Email</label>
                     <p>: {{$employee->emp_email}}</p>
-                </div>
+                </div> --}}
               </div>              
-              <div class="col-sm-4">
-                <!-- <div class="form-item">
-                    <label for="name">No.</label>
-                    <p>: {{$payroll->id}}</p>
-                </div> -->
+              <div class="col-sm-4">               
                 <div class="form-item">
-                    <label for="name">Date</label>
-                    <p>: {{date('d-m-Y', strtotime($payroll->payroll_date))}}</p>
+                    <label for="name">Date Paid </label>
+                    <p style="text-align: right;"> {{date('d-m-Y', strtotime($payroll->payroll_date))}}</p>
                 </div>
+                <div class="form-item">
+                    <label for="name">Pay Period Start </label>
+                    <p style="text-align: right;"> {{date('d-m-Y', strtotime($min_date))}}</p>
+                </div>
+                <div class="form-item">
+                  <label for="name">Pay Period End </label>
+                  <p style="text-align: right;"> {{date('d-m-Y', strtotime($max_date))}}</p>
+              </div>
+              <div class="form-item">
+                <label for="name">Employment Status </label>
+                <p style="text-align: right;"> {{$employee->emp_status}}</p>
+            </div>
               </div> 
             </div>                           
-            <br>
-            <div class="form-group float-none">
-              <p>Job details :</p>
-            </div>                                         
+            <br>                                        
             <table class="table table-bordered table-striped">
             <thead>
-                <th>Date</th>
-                <th>Job</th>
-                <th>Time Start</th>
-                <th>Time End</th>
-                <th class="text-center">Rest Time(Min)</th>
-                <th class="text-center">Total(Hours)</th>
-                <th class="text-center">Total(Bin)</th>
-                <th class="text-center">Rate(AUD)</th>
-                <th class="text-right">Total(AUD)</th>
+                <th>Payment Type</th>
+                <th>Description</th>
+                <th class="text-center">Qty/Hrs</th>
+                <th>Unit/Type/Desc</th>                
+                <th class="text-center">Rate($)</th>
+                <th class="text-right">Amount($)</th>
             </thead>
-            <tbody>
+            <tbody>   
                 @php
-                $total_salary = 0
+                    $salary = 0;
+                    $total_salary = 0;
+                @endphp             
+                @foreach($job_details as $value)
+                @php
+                    $qty_hrs = $value['tot_hrs'] != 0 ? $value['tot_hrs'] : ""; 
+                    $qty_bin = $value['tot_bin'] != 0 ? $value['tot_bin'] : ""; 
+                    $desc_hrs = $value['description'] == 'hour' ? "Normal Hours" : "";
+                    $desc_bin = $value['description'] == 'bin' ? "Bins" : "";
+                    $salary = ($value['tot_hrs'] * $value['rate']) + ($value['tot_bin']*$value['rate']);
+                    $total_salary += $salary;
                 @endphp
-                @foreach($payroll_details as $p)
-                    @php
-                    $total_salary += $p->total;
-                    @endphp
-                    <tr data-entry-id="{{$p->id}}">
-                        <td>{{ date('d-m-Y', strtotime($p->date)) ?? '' }}</td>
-                        <td>{{ App\Job::getJobName($p->job_id) ?? '' }}</td>
-                        <td>{{ $p->time_start ?? '' }}</td>
-                        <td>{{ $p->time_end ?? '' }}</td>
-                        <td class="text-center">{{ $p->time_rest ?? '' }}</td>
-                        <td class="text-center">{{ $p->total_hours ?? '' }}</td>
-                        <td class="text-center">{{ $p->total_bin ?? '' }}</td>
-                        <td class="text-center">{{ number_format($p->rate,2) ?? '' }}</td>
-                        <td class="text-right">{{ number_format($p->total,2) ?? '' }}</td>
+                    <tr data-entry-id="">                                    
+                        <td class="text-left">Pay Rate</td>
+                        <td class="text-left">{{$desc_hrs}} {{$desc_bin}}</td>
+                        <td class="text-center">{{$qty_hrs}} {{$qty_bin}}</td>
+                        <td class="text-left">{{$value['job_name']}}</td>
+                        <td class="text-center">{{$value['rate']}}</td>
+                        <td class="text-right">{{number_format($salary, 2)}}</td>
                     </tr>
                 @endforeach
+                <tr data-entry-id="">                                    
+                    <td>Super</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
                 <tr>
-                    <td colspan="8" class="text-right"><b>Total (AUD)</b></td>
-                    <td class="text-right"><b>{{ number_format($total_salary,2) }}</b></td>
+                    <td colspan="5" class="text-right"><b>Wages :</b></td>
+                    <td class="text-right"><b>0</b></td>
                 </tr>
                 <tr>                        
-                    <td colspan="8" class="text-right"><b>Bonus/Allowance etc (AUD)</b></td>
-                    <td class="text-right"><b>+ {{ number_format($payroll->allowance,2) }}</b></td>
+                    <td colspan="5" class="text-right"><b>Super :</b></td>
+                    <td class="text-right"><b>0</b></td>
                 </tr>
                 <tr>
-                    <td colspan="8" class="text-right"><b>Deduction Other(AUD)</b></td>
-                    <td class="text-right"><b>- {{ number_format($payroll->deduction,2) }}</b></td>
+                    <td colspan="5" class="text-right"><b>Gross :</b></td>
+                    <td class="text-right"><b>0</b></td>
                 </tr>
                 <tr>
-                    <td colspan="8" class="text-right"><b>Deduction Tax(AUD)</b></td>
-                    <td class="text-right"><b>- {{ number_format($payroll->emp_tax,2) }}</b></td>
+                    <td colspan="5" class="text-right"><b>Tax :</b></td>
+                    <td class="text-right"><b>0</b></td>
                 </tr>
                 <tr>                        
-                    <td colspan="8" class="text-right"><b>Grandtotal (AUD)</b></td>
-                    <td class="text-right"><b>{{ number_format((($total_salary+$payroll->allowance) - ($payroll->deduction+$payroll->emp_tax)),2) }}</b></td>
+                    <td colspan="5" class="text-right"><b>Net</b></td>
+                    <td class="text-right"><b>{{number_format($total_salary,2)}}</b></td>
                 </tr>
             </tbody>
             </table>                         

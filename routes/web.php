@@ -28,7 +28,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
 	
 	// Payroll
     Route::delete('payrolls/destroy', 'PayrollController@massDestroy')->name('payrolls.massDestroy');
-    Route::post('payrolls/destroys/{id}', 'PayrollController@destroy')->name('payrolls.destroy');
+    Route::delete('payrolls/destroys/{id}', 'PayrollController@destroy')->name('payrolls.destroy');
     Route::resource('payrolls', 'PayrollController');
     Route::post('payrolls/add', 'PayrollController@store')->name('payrolls.add');
     Route::post('payrolls/update', 'PayrollController@update')->name('payrolls.update');
@@ -37,8 +37,18 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     Route::post('payrolls/details/update', 'PayrollController@update_details')->name('payrolls.details.update');
     Route::get('payrolls/print_payroll/{id}', 'PayrollController@print_payroll')->name('payrolls.print');
     Route::post('payrolls/daterange', 'PayrollController@filter_daterange')->name('payrolls.daterange');
-
-
+    Route::post('payrolls/sendmail', 'PayrollController@send_email')->name('payrolls.sendmail');
+    //Timesheet
+    Route::resource('timesheet', 'TimeSheetController');
+    Route::delete('timesheet/destroy', 'TimeSheetController@massDestroy')->name('timesheet.massDestroy');
+    Route::post('timesheet/destroy/{id}', 'TimeSheetController@destroy')->name('timesheet.destroy');    
+    Route::post('timesheet/add', 'TimeSheetController@store')->name('timesheet.add');
+    Route::post('timesheet/update', 'TimeSheetController@update')->name('timesheet.update');
+    Route::post('timesheet/retrieve', 'TimeSheetController@retrieve')->name('timesheet.retrieve');
+    Route::post('timesheet/details/destroy', 'TimeSheetController@destroy_details')->name('timesheet.destroy.details');
+    Route::post('timesheet/details/update', 'TimeSheetController@update_details')->name('timesheet.details.update');
+    Route::get('timesheet/print_payroll/{id}', 'TimeSheetController@print_payroll')->name('timesheet.print');
+    Route::post('timesheet/daterange', 'TimeSheetController@filter_daterange')->name('timesheet.daterange');
     // Students
     Route::delete('students/destroy', 'StudentsController@massDestroy')->name('students.massDestroy');
     Route::resource('students', 'StudentsController');

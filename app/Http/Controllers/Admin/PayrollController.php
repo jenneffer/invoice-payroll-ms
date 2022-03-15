@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyStudentRequest;
 use App\Http\Requests\StorePayrollRequest;
 use App\Http\Requests\UpdatePayrollRequest;
+use Illuminate\Support\Facades\Mail; 
+use App\Mail\Email;
 use App\Payroll;
 use App\PayrollDetails;
 use App\Employee;
 use App\Job;
 use Gate;
 use DB;
+use PDF;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,11 +25,13 @@ class PayrollController extends Controller
     {
         // abort_if(Gate::denies('student_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $payroll = DB::table('payroll')
-                    ->join('employee', 'employee.id', '=', 'payroll.emp_id')
-                    ->select('payroll.*', 'employee.emp_name', 'employee.emp_email')
-                    ->where('payroll.deleted_at', NULL)
-                    ->get();
+        // $payroll = DB::table('payroll')
+        //             ->join('employee', 'employee.id', '=', 'payroll.emp_id')
+        //             ->select('payroll.*', 'employee.emp_name', 'employee.emp_email')
+        //             ->where('payroll.deleted_at', NULL)
+        //             ->get();
+
+        $payroll = Payroll::whereNull('deleted_at')->get();
 
         return view('admin.payrolls.index', compact('payroll'));
     }
@@ -37,28 +42,85 @@ class PayrollController extends Controller
         if(request()->ajax()){
             $payroll = DB::table('payroll')
             ->join('employee', 'employee.id', '=', 'payroll.emp_id')
-            ->select('payroll.*', 'employee.emp_name', 'employee.emp_email',DB::raw('((total_salary+allowance)-(deduction+emp_tax)) as payable_salary'))
+            ->select('payroll.*', 'employee.emp_name', 'employee.emp_email',DB::raw('((total_salary+allowance)-(deduction+emp_tax)) as payable_salary'), DB::raw('(SELECT min(DATE) FROM payroll_details WHERE payroll_id=payroll.id) as start_date'),DB::raw('(SELECT max(DATE) FROM payroll_details WHERE payroll_id=payroll.id) as end_date'))
             ->where('payroll.deleted_at', NULL)
-            ->whereBetween('payroll_date', array($from, $to))
+            // ->whereBetween('payroll_date', array($from, $to))
+            ->having('start_date','>=', $from)
+            ->having('end_date','<=', $to)
             ->get();
-        
+
+            // $payroll = DB::select("SELECT p.*, e.emp_name, e.emp_email,
+            //                 (SELECT min(DATE) FROM payroll_details WHERE payroll_id=p.id)AS sdate ,
+            //                 (SELECT max(DATE) FROM payroll_details WHERE payroll_id=p.id)AS edate FROM payroll p
+            //                 INNER JOIN employee e ON p.emp_id = e.id
+            //                 HAVING sdate>='$from' AND edate <= '$to'
+            //             ");
+                        
             return datatables()->of($payroll)  
-                    ->addIndexColumn()   
-                    ->addColumn('action', function($row){
-                        return $this->getActionColumn($row);
-                    })
+                    ->addIndexColumn()                       
                     ->addColumn('print', function($row){
                         return $this->getPrintColumn($row);
                     })
+                    ->addColumn('start_date', function($row){
+                        return $this->getStartDate($row);
+                    })
+                    ->addColumn('total_salary', function($row){
+                        return number_format($row->total_salary,2);
+                    })
+                    ->addColumn('emp_status', function($row){
+                        return 'Part-time';
+                    })
+                    ->addColumn('end_date', function($row){
+                        return $this->getEndDate($row);
+                    })                    
                     ->rawColumns(['action','print'])
                     ->make(true);
         }
         
     }
+    protected function getStartDate($data): string 
+    {
+        $result = PayrollDetails::where('payroll_id', $data->id)->get();
+        $p_date = [];
+        foreach($result as $res){
+            $p_date[] = $res->date;
+        }
 
+        usort($p_date, function($a, $b) {
+            $dateTimestamp1 = strtotime($a);
+            $dateTimestamp2 = strtotime($b);
+
+            return $dateTimestamp1 < $dateTimestamp2 ? -1: 1;
+        });
+
+        $min_date = $p_date[0];
+        
+
+        return $min_date;
+    }
+    protected function getEndDate($data): string 
+    {
+        $result = PayrollDetails::where('payroll_id', $data->id)->get();
+        $p_date = [];
+        foreach($result as $res){
+            $p_date[] = $res->date;
+        }
+
+        usort($p_date, function($a, $b) {
+            $dateTimestamp1 = strtotime($a);
+            $dateTimestamp2 = strtotime($b);
+
+            return $dateTimestamp1 < $dateTimestamp2 ? -1: 1;
+        });
+       
+        $max_date = $p_date[count($p_date) - 1];
+
+        return $max_date;
+    }
     protected function getPrintColumn($data): string
     {
-        $printUrl = route('admin.payrolls.print',$data->id);
+        // $printUrl = route('admin.payrolls.print',$data->id);  
+        $printUrl = route('admin.payrolls.print',$data->id);        
         return "<a href='$printUrl' target='_blank' title='Print'>
                 <i class='fas fa-print fa-2x'></i>
                 </a>";
@@ -323,11 +385,62 @@ class PayrollController extends Controller
     {
         $payroll = Payroll::find($id);
         $employee = DB::table('employee')->where('id',$payroll->emp_id)->first();
-
         // $moneyText = $this->numberTowords1($invoice->total_amount);
         $payroll_details = PayrollDetails::where('payroll_id', $id)->get();     
+        $p_date = [];  
+        $job = [];   
+        foreach($payroll_details as $pd){
+            // var_dump($pd);
+            $p_date[] = $pd->date;
+            // $job_details[$pd->job->id] = array(
+            //     'job_name' => $pd->job->job_name,
+            //     'description' => $pd->job->job_pay_method,
+            //     'tot_hrs' => ($job[$pd->job->id]['tot_hrs'] ?? 0) + $pd->total_hours,
+            //     'tot_bin' => ($job[$pd->job->id]['tot_bin'] ?? 0) + $pd->total_bin,
+            //     'rate' => $pd->rate 
+            // );
+            $job[$pd->job->id][] = array(
+                'job_name' => $pd->job->job_name,
+                'description' => $pd->job->job_pay_method,
+                'tot_hrs' => number_format($pd->total_hours,2),
+                'tot_bin' => $pd->total_bin,
+                'rate' => $pd->rate 
+            );
+        }
+        $job_details = [];
+        foreach ($job as $key => $value) {                        
+            foreach ($value as $val) {
+                if(isset($job_details[$key]['tot_hrs'])){
+                    $job_details[$key]['tot_hrs'] += $val['tot_hrs'];
+                }else{
+                    $job_details[$key]['tot_hrs'] = $val['tot_hrs'];
+                }
+
+                if(isset($job_details[$key]['tot_bin'])){
+                    $job_details[$key]['tot_bin'] += $val['tot_bin'];
+                }else{
+                    $job_details[$key]['tot_bin'] = $val['tot_bin'];
+                }
+
+                $job_details[$key]['job_name'] = $val['job_name'];
+                $job_details[$key]['description'] = $val['description'];
+                $job_details[$key]['rate'] = $val['rate'];
+            }
+        }
         
-        return view('admin.payrolls.print', compact('payroll','payroll_details','employee'));
+        usort($p_date, function($a, $b) {
+            $dateTimestamp1 = strtotime($a);
+            $dateTimestamp2 = strtotime($b);
+
+            return $dateTimestamp1 < $dateTimestamp2 ? -1: 1;
+        });  
+        
+        $min_date = $p_date[0];
+        $max_date = $p_date[count($p_date) - 1];
+        $total_salary = $payroll->total_salary;
+        $pdf = PDF::loadView('mails.payslip', compact('payroll','payroll_details','employee','min_date','max_date','job_details'));
+        return $pdf->stream($employee->emp_name.'_'.$payroll->payroll_date.'.pdf');
+        // return view('admin.payrolls.print', compact('payroll','payroll_details','employee','min_date','max_date','job_details'));
 
     }
     public static function numberTowords1($num){
@@ -416,6 +529,40 @@ class PayrollController extends Controller
             }
         }
         return $rettxt;
+    }
+
+    public function send_email(Request $request)
+    {
+        $id = $request->id;
+        $payroll = Payroll::find($id);
+        $employee = DB::table('employee')->where('id',$payroll->emp_id)->first();    
+        $payroll_details = PayrollDetails::where('payroll_id', $id)->get();     
+        //sent email to administrator/moderator of the submission
+        $objDemo = new \stdClass();                        
+        $objDemo->receiver = $employee->emp_email;
+        // $objDemo->receiver = 'j.jennefferj@gmail.com';
+        $objDemo->receiverName = $employee->emp_name;
+        $objDemo->payroll = $payroll;
+        $objDemo->payroll_details = $payroll_details;
+        $objDemo->employee = $employee;        
+        $objDemo->sender = 'payslip-info@linusaussie.link';
+        
+        Mail::send(new Email($objDemo));
+
+        $response = [];
+        //check for failure
+        if (Mail::failures()) {
+            $response = array('msg' => 'Email failed to send!');
+        }else{
+            //update email_sent column in payroll table
+            $payrollUpdate = Payroll::find($id);
+            $payrollUpdate->email_sent = 1;
+            $payrollUpdate->save();
+            $response = array('msg' => 'Email successfully sent!');
+        }
+
+        return response()->json($response);
+        
     }
 
 }

@@ -152,7 +152,7 @@
         text: selectAllButtonTrans,
         exportOptions: {
           columns: ':visible'
-        }
+        }        
       },
       {
         extend: 'selectNone',
@@ -168,7 +168,8 @@
         text: copyButtonTrans,
         exportOptions: {
           columns: ':visible'
-        }
+        },
+        footer: true
       },
       {
         extend: 'csv',
@@ -176,7 +177,8 @@
         text: csvButtonTrans,
         exportOptions: {
           columns: ':visible'
-        }
+        },
+        footer: true
       },
       {
         extend: 'excel',
@@ -184,7 +186,8 @@
         text: excelButtonTrans,
         exportOptions: {
           columns: ':visible'
-        }
+        },
+        footer: true
       },
       {
         extend: 'pdf',
@@ -192,7 +195,8 @@
         text: pdfButtonTrans,
         exportOptions: {
           columns: ':visible'
-        }
+        },
+        footer: true
       },
       {
         extend: 'print',
@@ -200,7 +204,8 @@
         text: printButtonTrans,
         exportOptions: {
           columns: ':visible'
-        }
+        },
+        footer: true
       },
       {
         extend: 'colvis',
@@ -208,7 +213,8 @@
         text: colvisButtonTrans,
         exportOptions: {
           columns: ':visible'
-        }
+        },
+        footer: true
       }
     ]
   });

@@ -21,11 +21,12 @@ class Employee extends Model
     protected $fillable = [
         'emp_name',
         'emp_doj',
-        'emp_email'
+        'emp_email',
+        'emp_status'
     ];
     public function payroll()
     {
-        return $this->hasOne(Payroll::class,'emp_id','id');
+        return $this->belongsTo(Payroll::class,'emp_id','id');
     }
     public function created_by()
     {

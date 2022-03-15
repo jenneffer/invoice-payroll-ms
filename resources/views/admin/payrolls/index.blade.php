@@ -1,14 +1,14 @@
 @extends('layouts.admin')
 @section('content')
-@can('student_create')
+{{-- @can('student_create')
     <div style="margin-bottom: 10px;" class="row">
         <div class="col-lg-12">
             <a class="btn btn-success" href="{{ route("admin.payrolls.create") }}">
-                Create Payroll
+                Create TimeSheet
             </a>
         </div>
     </div>
-@endcan
+@endcan --}}
 @php
 $now = \Carbon\Carbon::now();
 $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i');
@@ -16,7 +16,7 @@ $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
 @endphp
 <div class="card">
     <div class="card-header">
-        Payroll List
+        Payslip List
     </div>
 
     <div class="card-body">
@@ -43,49 +43,57 @@ $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
         <br>
         <div class="table-responsive">                                               
             <table id="payroll_table" class="table table-bordered table-striped table-hover datatable datatable-Payroll">            
-            <thead>
+                <thead>
                     <tr>
-                        <th width="10" rowspan="2">
+                        <th width="10">
                         </th>
-                        <th rowspan="2">
+                        <th>
                             ID
                         </th>
-                        <th rowspan="2">
-                            Date
+                        <th>
+                            Payroll Date
                         </th>
-                        <th rowspan="2">
+                        <th>
                             Employee Name
                         </th>
-                        <th rowspan="2">
+                        <th>
                             Employee Email
                         </th>
-                        <th class="text-right" rowspan="2">
+                        <th class="text-right">
                             Total Salary ($)
                         </th>  
-                        <th class="text-right" rowspan="2">
-                            Bonus<br>/Allowance ($)
+                        <th class="text-center">
+                            Employment<br>Status
                         </th> 
-                        <th class="text-center" colspan="2">
-                            Deduction
-                        </th>                         
-                        <th class="text-right" rowspan="2">
-                            Payable<br>Salary ($)
-                        </th>                     
-                        <th rowspan="2">
-                            Action
+                        <th class="text-center">
+                            Pay Period<br>Start
                         </th>
-                        <th rowspan="2">
+                        <th class="text-center">
+                            Pay Period<br>End
+                        </th>                                                 
+                        <th>
                             Print<br>Payslip
-                        </th>
-                    </tr>                        
-                    <tr>
-                        <th>Other($)</th>
-                        <th>Tax($)</th>
-                    </tr>
+                        </th> 
+                        <th>
+                            Email<br>Payslip
+                        </th>                       
+                    </tr>                                           
                 </thead>
                 <tbody>
                     
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4">&nbsp;</th>
+                        <th class="text-right">Total($)</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -96,6 +104,7 @@ $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
 @endsection
 @section('scripts')
 @parent
+
 <script>
 $(function () {
     let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
@@ -138,7 +147,7 @@ $(function () {
         // buttons: dtButtons,
         processing: true,
         serverSide: true,
-        serverMethod: 'POST',
+        serverMethod: 'post',
         searching: true, // Set false to Remove default Search Control
         ajax: {
             url:"{{ route('admin.payrolls.daterange') }}",
@@ -170,48 +179,105 @@ $(function () {
                 data:'emp_email',                
             },
             {
-                data:'total_salary',   
-                render: function( data, type, row){
-                    if(type==='display'){
-                        return currencyFormat(data);
-                    }
-                }              
+                data:'total_salary',                             
+            },      
+            {
+                data:'emp_status',                             
+            },      
+            {
+                data:'start_date',                               
             },
             {
-                data:'allowance',                
-            },
-            {
-                data:'deduction',                
-            },
-            {
-                data:'emp_tax',                
-            },
-            {
-                data:'payable_salary', 
-                render: function( data, type, row){
-                    if(type==='display'){
-                        return currencyFormat(data);
-                    }
-                }           
-            },
-            {
-                data:'action',               
-            },
+                data:'end_date',                                
+            },                        
             {
                 data:'print',
-            },
+            },  
+            {
+                data:'email',
+                render: function(data, type, row, meta){
+                    console.log(type)
+                    if(type === 'display'){
+                        if(row.email_sent == 1){
+                            return '<i class="fa fa-check-circle fa-2x" aria-hidden="true" style="color:green;"></i>';
+                        }else{
+                            return '<a class="btn btn-xs btn-danger" data-id="'+row.id+'" id="send_email"><span style="color:white;">Send Email</span></a>';
+                        }
+                    }else{
+                        return "";
+                    }
+                    
+                }          
+            },            
         ],  
         columnDefs: [
             {
                 targets:[0],               
                 visible:false
             },
+            {
+                targets: 5,
+                className: "text-right",
+            },
+            {
+                targets: [2,6,9,10],
+                className: "text-center",
+            }
             
         ],
-                  
-        
+        "footerCallback": function ( row, data, start, end, display ) {
+            var api = this.api();
+            // Remove the formatting to get integer data for summation
+            var intVal = function ( i ) {
+                return typeof i === 'string' ?
+                    i.replace(/[\$,]/g, '')*1 :
+                    typeof i === 'number' ?
+                        i : 0;
+            };
+ 
+            // Total over all pages
+            var total = api
+                .column( 5 )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+ 
+            // Total over this page
+            var pageTotal = api
+                .column( 5, { page: 'current'} )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+ 
+            // Update footer
+            $( api.column( 5 ).footer() ).html(
+                '$'+ currencyFormat(total) +' '
+            );
+        }
+  
     });
-
+    //send email
+    $(document).on('click' , '#send_email', function(){
+        var id = $(this).data("id");             
+        var token = $("meta[name='csrf-token']").attr("content");     
+        console.log(id);   
+        $.ajax(
+        {
+            url: '{{route("admin.payrolls.sendmail")}}',
+            type: 'POST',
+            data: {
+                "id": id,                
+                "_token": token,
+            },
+            success: function (data){
+                alert(data.msg);
+                location.reload();
+            }
+        });
+    
+    });
     // set on change date picker
     $('#search_payroll').on('click', function() {
         var from = $("#date_from").val();
